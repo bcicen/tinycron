@@ -13,8 +13,10 @@ import (
 
 var version = "dev-build"
 
-func output(s string, vars ...string) {
-	msg := fmt.Sprintf(s, vars)
+func output(msg string, vars ...interface{}) {
+	if len(vars) > 0 {
+		msg = fmt.Sprintf(msg, vars...)
+	}
 	fmt.Printf("[%s] %s\n", color.CyanString("tinycron"), msg)
 }
 
@@ -59,6 +61,9 @@ func nap(schedule *cronexpr.Expression) {
 }
 
 func main() {
+	//	for _, i := range os.Args {
+	//		fmt.Println(i)
+	//	}
 	app := cli.NewApp()
 	app.Name = "tinycron"
 	app.Usage = "a very small replacement for cron"
