@@ -18,6 +18,7 @@ type TinyCronJob struct {
 	cmd      string
 	args     []string
 	schedule *cronexpr.Expression
+	debug    bool
 }
 
 func output(msg string, vars ...interface{}) {
@@ -49,15 +50,19 @@ func (job *TinyCronJob) run() {
 	exe := exec.Command(job.cmd, job.args...)
 	exe.Stdout = os.Stdout
 	exe.Stderr = os.Stderr
-	output("running job: %s %s", job.cmd, strings.Join(job.args, " "))
+	if job.debug {
+		output("running job: %s %s", job.cmd, strings.Join(job.args, " "))
+	}
 	errHandler(exe.Run(), "job failed")
 }
 
-func (job *TinyCronJob) nap(verbose bool) {
+func (job *TinyCronJob) nap() {
 	now := time.Now()
 	nextRun := job.schedule.Next(now)
 	timeDelta := nextRun.Sub(now)
-	output(fmt.Sprintf("next job scheduled for %s", nextRun))
+	if job.debug {
+		output(fmt.Sprintf("next job scheduled for %s", nextRun))
+	}
 	time.Sleep(timeDelta)
 }
 
@@ -117,6 +122,8 @@ func main() {
 		for _, s := range c.Args()[1:] {
 			job.args = append(job.args, s)
 		}
+
+		job.debug = c.Bool("debug")
 
 		for {
 			job.nap()
