@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/codegangsta/cli"
@@ -12,6 +13,12 @@ import (
 )
 
 var version = "dev-build"
+
+type TinyCronJob struct {
+	cmd      string
+	args     []string
+	schedule *cronexpr.Expression
+}
 
 func output(msg string, vars ...interface{}) {
 	if len(vars) > 0 {
@@ -37,33 +44,51 @@ func exitOnErr(err error, msg string) {
 	}
 }
 
-type execCmd struct {
-	cmd  string
-	args []string
-}
-
 // Run an exec job, returning when completed
-func runJob(cmdline []string) {
-	cmd, args := cmdline[0], cmdline[1:]
-	job := exec.Command(cmd, args...)
-	job.Stdout = os.Stdout
-	job.Stderr = os.Stderr
-	output("running job: %s", cmd)
-	errHandler(job.Run(), "job failed")
+func (job *TinyCronJob) run() {
+	exe := exec.Command(job.cmd, job.args...)
+	exe.Stdout = os.Stdout
+	exe.Stderr = os.Stderr
+	output("running job: %s %s", job.cmd, strings.Join(job.args, " "))
+	errHandler(exe.Run(), "job failed")
 }
 
-func nap(schedule *cronexpr.Expression) {
+func (job *TinyCronJob) nap(verbose bool) {
 	now := time.Now()
-	nextRun := schedule.Next(now)
+	nextRun := job.schedule.Next(now)
 	timeDelta := nextRun.Sub(now)
 	output(fmt.Sprintf("next job scheduled for %s", nextRun))
 	time.Sleep(timeDelta)
 }
 
+func NewTinyCronJob(s string) (*TinyCronJob, error) {
+	var expr string
+	var cmdline []string
+	parts := strings.Split(s, " ")
+
+	if strings.HasPrefix(s, "@") {
+		expr = parts[0]
+		cmdline = parts[1:]
+	} else {
+		if len(parts) < 8 {
+			return nil, fmt.Errorf("incomplete cron expression")
+		}
+		expr = strings.Join(parts[0:7], " ")
+		cmdline = parts[7:]
+	}
+	schedule, err := cronexpr.Parse(expr)
+	if err != nil {
+		return nil, err
+	}
+	job := &TinyCronJob{
+		cmd:      cmdline[0],
+		args:     cmdline[1:],
+		schedule: schedule,
+	}
+	return job, nil
+}
+
 func main() {
-	//	for _, i := range os.Args {
-	//		fmt.Println(i)
-	//	}
 	app := cli.NewApp()
 	app.Name = "tinycron"
 	app.Usage = "a very small replacement for cron"
@@ -85,14 +110,17 @@ func main() {
 			errHandler(fmt.Errorf("incorrect number of arguments"), "")
 			os.Exit(1)
 		}
-		schedule, err := cronexpr.Parse(c.Args()[0])
-		exitOnErr(err, "erroring parsing schedule")
 
-		cmdline := c.Args()[1:]
+		job, err := NewTinyCronJob(c.Args()[0])
+		exitOnErr(err, "error creating job")
+
+		for _, s := range c.Args()[1:] {
+			job.args = append(job.args, s)
+		}
 
 		for {
-			nap(schedule)
-			go runJob(cmdline)
+			job.nap()
+			go job.run()
 		}
 	}
 
