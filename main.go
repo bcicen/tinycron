@@ -21,50 +21,9 @@ type TinyCronJob struct {
 	debug    bool
 }
 
-func output(msg string, vars ...interface{}) {
-	if len(vars) > 0 {
-		msg = fmt.Sprintf(msg, vars...)
-	}
-	fmt.Printf("[%s] %s\n", color.CyanString("tinycron"), msg)
-}
-
-func errHandler(err error, msg string) {
-	if err != nil {
-		if msg == "" {
-			output(err.Error())
-		} else {
-			output(fmt.Sprintf("%s %s", color.RedString(msg), err.Error()))
-		}
-	}
-}
-
-func exitOnErr(err error, msg string) {
-	if err != nil {
-		errHandler(err, msg)
-		os.Exit(1)
-	}
-}
-
-// Run an exec job, returning when completed
-func (job *TinyCronJob) run() {
-	exe := exec.Command(job.cmd, job.args...)
-	exe.Stdout = os.Stdout
-	exe.Stderr = os.Stderr
-	if job.debug {
-		output("running job: %s %s", job.cmd, strings.Join(job.args, " "))
-	}
-	errHandler(exe.Run(), "job failed")
-}
-
-func (job *TinyCronJob) nap() {
-	now := time.Now()
-	nextRun := job.schedule.Next(now)
-	timeDelta := nextRun.Sub(now)
-	if job.debug {
-		output(fmt.Sprintf("next job scheduled for %s", nextRun))
-	}
-	time.Sleep(timeDelta)
-}
+// parseExpression parses a cron schedule and command from a single string
+//func parseExpression(s string) (string, *cronexpr.Expression, error) {
+//}
 
 func NewTinyCronJob(s string) (*TinyCronJob, error) {
 	var expr string
@@ -93,6 +52,51 @@ func NewTinyCronJob(s string) (*TinyCronJob, error) {
 	return job, nil
 }
 
+// Run an exec job, returning when completed
+func (job *TinyCronJob) run() {
+	exe := exec.Command(job.cmd, job.args...)
+	exe.Stdout = os.Stdout
+	exe.Stderr = os.Stderr
+	if job.debug {
+		output("running job: %s %s", job.cmd, strings.Join(job.args, " "))
+	}
+	errHandler(exe.Run(), "job failed")
+}
+
+func (job *TinyCronJob) nap() {
+	now := time.Now()
+	nextRun := job.schedule.Next(now)
+	timeDelta := nextRun.Sub(now)
+	if job.debug {
+		output(fmt.Sprintf("next job scheduled for %s", nextRun))
+	}
+	time.Sleep(timeDelta)
+}
+
+func output(msg string, vars ...interface{}) {
+	if len(vars) > 0 {
+		msg = fmt.Sprintf(msg, vars...)
+	}
+	fmt.Printf("[%s] %s\n", color.CyanString("tinycron"), msg)
+}
+
+func errHandler(err error, msg string) {
+	if err != nil {
+		if msg == "" {
+			output(err.Error())
+		} else {
+			output(fmt.Sprintf("%s %s", color.RedString(msg), err.Error()))
+		}
+	}
+}
+
+func exitOnErr(err error, msg string) {
+	if err != nil {
+		errHandler(err, msg)
+		os.Exit(1)
+	}
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "tinycron"
@@ -100,12 +104,16 @@ func main() {
 	app.Version = version
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
-			Name:  "foreground, f",
-			Usage: "Keep tinycron running in the foreground",
+			Name:  "daemon, D",
+			Usage: "(WIP) Run tinycron in the background",
 		},
 		cli.BoolFlag{
 			Name:  "debug, d",
 			Usage: "Enable debug output",
+		},
+		cli.StringFlag{
+			Name:  "log-file, l",
+			Usage: "(WIP) Log job output to file",
 		},
 	}
 
