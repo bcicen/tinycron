@@ -24,3 +24,9 @@ $ /usr/local/bin/tinycron --debug '*/5 * * * * * * /bin/echo' 'hello!'
 [tinycron] running job: /bin/echo hello!
 hello!
 ```
+
+## Options
+
+Option | Description
+--- | ---
+--debug, -d | Enable debug output
