@@ -17,7 +17,13 @@ type TinyCronJob struct {
 	cmd      string
 	args     []string
 	schedule *cronexpr.Expression
-	debug    bool
+	opts     TinyCronOpts
+}
+
+type TinyCronOpts struct {
+	debug  bool
+	daemon bool
+	jobLog string
 }
 
 // parseExpression parses a cron schedule and command from a single string
@@ -33,7 +39,7 @@ func NewTinyCronJob(s string) (*TinyCronJob, error) {
 		expr = parts[0]
 		cmdline = parts[1:]
 	} else {
-		if len(parts) < 8 {
+		if len(parts) <= 7 {
 			return nil, fmt.Errorf("incomplete cron expression")
 		}
 		expr = strings.Join(parts[0:7], " ")
@@ -47,6 +53,7 @@ func NewTinyCronJob(s string) (*TinyCronJob, error) {
 		cmd:      cmdline[0],
 		args:     cmdline[1:],
 		schedule: schedule,
+		opts:     optsFromEnv(),
 	}
 	return job, nil
 }
@@ -56,7 +63,7 @@ func (job *TinyCronJob) run() {
 	exe := exec.Command(job.cmd, job.args...)
 	exe.Stdout = os.Stdout
 	exe.Stderr = os.Stderr
-	if job.debug {
+	if job.opts.debug {
 		output("running job: %s %s", job.cmd, strings.Join(job.args, " "))
 	}
 	errHandler(exe.Run(), "job failed")
@@ -66,7 +73,7 @@ func (job *TinyCronJob) nap() {
 	now := time.Now()
 	nextRun := job.schedule.Next(now)
 	timeDelta := nextRun.Sub(now)
-	if job.debug {
+	if job.opts.debug {
 		output(fmt.Sprintf("next job scheduled for %s", nextRun))
 	}
 	time.Sleep(timeDelta)
@@ -94,6 +101,19 @@ func exitOnErr(err error, msg string) {
 		errHandler(err, msg)
 		os.Exit(1)
 	}
+}
+
+func optsFromEnv() (opts TinyCronOpts) {
+	if os.Getenv("TINYCRON_DEBUG") != "" {
+		opts.debug = true
+	}
+	if os.Getenv("TINYCRON_DAEMON") != "" {
+		opts.daemon = true
+	}
+	if os.Getenv("TINYCRON_JOBLOG") != "" {
+		opts.jobLog = os.Getenv("TINYCRON_JOBLOG")
+	}
+	return opts
 }
 
 func parseArgs(args []string) {
@@ -140,9 +160,6 @@ func main() {
 	for _, s := range os.Args[2:] {
 		job.args = append(job.args, s)
 	}
-
-	os.Getenv("")
-	job.debug = true
 
 	for {
 		job.nap()
