@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/codegangsta/cli"
 	"github.com/fatih/color"
 	"github.com/gorhill/cronexpr"
 )
@@ -97,47 +96,56 @@ func exitOnErr(err error, msg string) {
 	}
 }
 
+func parseArgs(args []string) {
+	// var opts []string
+	fmt.Println(args)
+
+	//	opts := make([]string, 0)
+	for i, arg := range args {
+		fmt.Printf("%s - %s\n", i, arg)
+		//		if strings.HasPrefix(arg, "-") {
+		//			opts = append(opts, arg)
+		//		} else {
+		//			fmt.Println(opts)
+		//			fmt.Println(args[i:])
+		//			break
+		//		}
+	}
+}
+
+func usage() {
+	fmt.Println("Usage: tinycron [expression] [command]")
+	os.Exit(1)
+}
+
 func main() {
-	app := cli.NewApp()
-	app.Name = "tinycron"
-	app.Usage = "a very small replacement for cron"
-	app.Version = version
-	app.Flags = []cli.Flag{
-		cli.BoolFlag{
-			Name:  "daemon, D",
-			Usage: "(WIP) Run tinycron in the background",
-		},
-		cli.BoolFlag{
-			Name:  "debug, d",
-			Usage: "Enable debug output",
-		},
-		cli.StringFlag{
-			Name:  "log-file, l",
-			Usage: "(WIP) Log job output to file",
-		},
+	if len(os.Args) < 2 {
+		errHandler(fmt.Errorf("incorrect number of arguments"), "")
+		usage()
 	}
 
-	app.Action = func(c *cli.Context) {
-		if len(c.Args()) < 2 {
-			cli.ShowAppHelp(c)
-			errHandler(fmt.Errorf("incorrect number of arguments"), "")
-			os.Exit(1)
-		}
-
-		job, err := NewTinyCronJob(c.Args()[0])
-		exitOnErr(err, "error creating job")
-
-		for _, s := range c.Args()[1:] {
-			job.args = append(job.args, s)
-		}
-
-		job.debug = c.Bool("debug")
-
-		for {
-			job.nap()
-			go job.run()
-		}
+	switch {
+	case os.Args[1] == "version":
+		fmt.Printf("tinycron version %s\n", version)
+		os.Exit(0)
+	case os.Args[1] == "help":
+		usage()
+		fmt.Println("Normal")
+	case len(os.Args) <= 2:
 	}
 
-	app.Run(os.Args)
+	job, err := NewTinyCronJob(os.Args[1])
+	exitOnErr(err, "error creating job")
+
+	for _, s := range os.Args[2:] {
+		job.args = append(job.args, s)
+	}
+
+	os.Getenv("")
+	job.debug = true
+
+	for {
+		job.nap()
+		go job.run()
+	}
 }
