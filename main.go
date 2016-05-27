@@ -30,9 +30,10 @@ type TinyCronOpts struct {
 //func parseExpression(s string) (string, *cronexpr.Expression, error) {
 //}
 
-func NewTinyCronJob(s string) (*TinyCronJob, error) {
+func NewTinyCronJob(args []string) (*TinyCronJob, error) {
 	var expr string
 	var cmdline []string
+	s := strings.Join(args, " ")
 	parts := strings.Split(s, " ")
 
 	if strings.HasPrefix(s, "@") {
@@ -55,6 +56,8 @@ func NewTinyCronJob(s string) (*TinyCronJob, error) {
 		schedule: schedule,
 		opts:     optsFromEnv(),
 	}
+	//	fmt.Printf("cmd: %s\n", job.cmd)
+	//	fmt.Printf("args: %s\n", job.args)
 	return job, nil
 }
 
@@ -116,31 +119,13 @@ func optsFromEnv() (opts TinyCronOpts) {
 	return opts
 }
 
-func parseArgs(args []string) {
-	// var opts []string
-	fmt.Println(args)
-
-	//	opts := make([]string, 0)
-	for i, arg := range args {
-		fmt.Printf("%s - %s\n", i, arg)
-		//		if strings.HasPrefix(arg, "-") {
-		//			opts = append(opts, arg)
-		//		} else {
-		//			fmt.Println(opts)
-		//			fmt.Println(args[i:])
-		//			break
-		//		}
-	}
-}
-
 func usage() {
 	fmt.Println("Usage: tinycron [expression] [command]")
 	os.Exit(1)
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		errHandler(fmt.Errorf("incorrect number of arguments"), "")
+	if len(os.Args) < 1 {
 		usage()
 	}
 
@@ -150,16 +135,13 @@ func main() {
 		os.Exit(0)
 	case os.Args[1] == "help":
 		usage()
-		fmt.Println("Normal")
 	case len(os.Args) <= 2:
+		errHandler(fmt.Errorf("incorrect number of arguments"), "")
+		usage()
 	}
 
-	job, err := NewTinyCronJob(os.Args[1])
+	job, err := NewTinyCronJob(os.Args[1:])
 	exitOnErr(err, "error creating job")
-
-	for _, s := range os.Args[2:] {
-		job.args = append(job.args, s)
-	}
 
 	for {
 		job.nap()
