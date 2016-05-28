@@ -19,10 +19,10 @@ echo "Current time: $(date)"
 
 Or invoked via commandline:
 ```bash
-$ /usr/local/bin/tinycron --debug '*/5 * * * * * * /bin/echo' 'hello!'
+$ /usr/local/bin/tinycron --debug '*/5 * * * * * *' /bin/echo hello
 [tinycron] next job scheduled for 2016-05-16 11:58:45 -0400 EDT
-[tinycron] running job: /bin/echo hello!
-hello!
+[tinycron] running job: /bin/echo hello
+hello
 ```
 
 ## Options
