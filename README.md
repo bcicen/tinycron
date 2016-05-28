@@ -25,8 +25,10 @@ $ /usr/local/bin/tinycron --debug '*/5 * * * * * *' /bin/echo hello
 hello
 ```
 
-## Options
+## Config
 
-Option | Description
+TinyCron can be configured by setting the below environmental variables to a non-empty value:
+
+Variable | Description
 --- | ---
---debug, -d | Enable debug output
+TINYCRON_DEBUG | Enable debug output
