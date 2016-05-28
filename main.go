@@ -22,7 +22,6 @@ type TinyCronJob struct {
 
 type TinyCronOpts struct {
 	debug  bool
-	daemon bool
 	jobLog string
 }
 
@@ -109,9 +108,6 @@ func exitOnErr(err error, msg string) {
 func optsFromEnv() (opts TinyCronOpts) {
 	if os.Getenv("TINYCRON_DEBUG") != "" {
 		opts.debug = true
-	}
-	if os.Getenv("TINYCRON_DAEMON") != "" {
-		opts.daemon = true
 	}
 	if os.Getenv("TINYCRON_JOBLOG") != "" {
 		opts.jobLog = os.Getenv("TINYCRON_JOBLOG")
