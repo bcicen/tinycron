@@ -25,10 +25,6 @@ type TinyCronOpts struct {
 	jobLog string
 }
 
-// parseExpression parses a cron schedule and command from a single string
-//func parseExpression(s string) (string, *cronexpr.Expression, error) {
-//}
-
 func NewTinyCronJob(args []string) (*TinyCronJob, error) {
 	var expr string
 	var cmdline []string
@@ -55,8 +51,6 @@ func NewTinyCronJob(args []string) (*TinyCronJob, error) {
 		schedule: schedule,
 		opts:     optsFromEnv(),
 	}
-	//	fmt.Printf("cmd: %s\n", job.cmd)
-	//	fmt.Printf("args: %s\n", job.args)
 	return job, nil
 }
 

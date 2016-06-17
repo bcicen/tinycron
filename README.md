@@ -11,19 +11,28 @@ sudo chmod +x /usr/local/bin/tinycron
 
 # Usage
 
-TinyCron can be used directly in your scripts shebang line:
 ```
-#!/usr/local/bin/tinycron */5 * * * * * * /bin/sh
+tinycron [expression] [command]
+```
+
+Tinycron can be invoked via commandline:
+```bash
+$ /usr/local/bin/tinycron '*/5 * * * * * *' /bin/echo hello
+```
+
+Or used in your scripts interpreter line:
+```bash
+#!/usr/local/bin/tinycron */5 * * * * * * /bin/sh # run this script every five seconds
 echo "Current time: $(date)"
 ```
 
-Or invoked via commandline:
-```bash
-$ /usr/local/bin/tinycron --debug '*/5 * * * * * *' /bin/echo hello
-[tinycron] next job scheduled for 2016-05-16 11:58:45 -0400 EDT
-[tinycron] running job: /bin/echo hello
-hello
-```
+## Expressions
+
+Tinycron uses and supports all expressions in the [cronexpr](https://github.com/gorhill/cronexpr) library. Some examples:
+
+`@daily` - run once daily, at midnight
+`*/30 * * * * * *` - run every 30 seconds
+`* 15 * * * * *` - run at minute `:15` of every hour
 
 ## Config
 
