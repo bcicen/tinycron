@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
@@ -57,8 +58,16 @@ func NewTinyCronJob(args []string) (*TinyCronJob, error) {
 // Run an exec job, returning when completed
 func (job *TinyCronJob) run() {
 	exe := exec.Command(job.cmd, job.args...)
-	exe.Stdout = os.Stdout
-	exe.Stderr = os.Stderr
+	if job.opts.jobLog != "" {
+		logFile, err := os.OpenFile(job.opts.jobLog, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+		exitOnErr(err, "")
+		logWriter := bufio.NewWriter(logFile)
+		exe.Stdout = logWriter
+		exe.Stderr = logWriter
+	} else {
+		exe.Stdout = os.Stdout
+		exe.Stderr = os.Stderr
+	}
 	if job.opts.verbose {
 		output("running job: %s %s", job.cmd, strings.Join(job.args, " "))
 	}
