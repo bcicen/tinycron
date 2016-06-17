@@ -21,8 +21,8 @@ type TinyCronJob struct {
 }
 
 type TinyCronOpts struct {
-	debug  bool
-	jobLog string
+	verbose bool
+	jobLog  string
 }
 
 func NewTinyCronJob(args []string) (*TinyCronJob, error) {
@@ -59,7 +59,7 @@ func (job *TinyCronJob) run() {
 	exe := exec.Command(job.cmd, job.args...)
 	exe.Stdout = os.Stdout
 	exe.Stderr = os.Stderr
-	if job.opts.debug {
+	if job.opts.verbose {
 		output("running job: %s %s", job.cmd, strings.Join(job.args, " "))
 	}
 	errHandler(exe.Run(), "job failed")
@@ -69,7 +69,7 @@ func (job *TinyCronJob) nap() {
 	now := time.Now()
 	nextRun := job.schedule.Next(now)
 	timeDelta := nextRun.Sub(now)
-	if job.opts.debug {
+	if job.opts.verbose {
 		output(fmt.Sprintf("next job scheduled for %s", nextRun))
 	}
 	time.Sleep(timeDelta)
@@ -100,8 +100,8 @@ func exitOnErr(err error, msg string) {
 }
 
 func optsFromEnv() (opts TinyCronOpts) {
-	if os.Getenv("TINYCRON_DEBUG") != "" {
-		opts.debug = true
+	if os.Getenv("TINYCRON_VERBOSE") != "" {
+		opts.verbose = true
 	}
 	if os.Getenv("TINYCRON_JOBLOG") != "" {
 		opts.jobLog = os.Getenv("TINYCRON_JOBLOG")

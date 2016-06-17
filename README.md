@@ -40,4 +40,4 @@ TinyCron can be configured by setting the below environmental variables to a non
 
 Variable | Description
 --- | ---
-TINYCRON_DEBUG | Enable debug output
+TINYCRON_VERBOSE | Enable verbose output
