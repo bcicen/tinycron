@@ -4,7 +4,7 @@ A very small replacement for cron
 ## Installing
 
 ```bash
-curl -sLo tinycron https://github.com/bcicen/tinycron/releases/download/v0.2/tinycron-0.2-linux-amd64
+curl -sLo tinycron https://github.com/bcicen/tinycron/releases/download/v0.3/tinycron-0.3-linux-amd64
 sudo mv tinycron /usr/local/bin/
 sudo chmod +x /usr/local/bin/tinycron
 ```
