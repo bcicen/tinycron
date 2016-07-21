@@ -7,6 +7,7 @@ build:
 	go get -v -d
 	GOOS=darwin GOARCH=amd64 go build -ldflags "-s -X main.version=$(VERSION) -X main.build=$(BUILD)" -o build/$(NAME)-$(VERSION)-darwin-amd64
 	GOOS=linux GOARCH=amd64 go build -ldflags "-s -X main.version=$(VERSION) -X main.build=$(BUILD)" -o build/$(NAME)-$(VERSION)-linux-amd64
+	upx -9 build/$(NAME)-$(VERSION)-linux-amd64
 
 release:
 	rm -rf release && mkdir release
