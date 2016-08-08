@@ -1,5 +1,5 @@
 # tinycron
-A very small replacement for cron
+A very small replacement for cron. Particularly useful within containers and for distributing cron tasks alongside a project as a standalone file.
 
 ## Installing
 
@@ -15,16 +15,17 @@ sudo chmod +x /usr/local/bin/tinycron
 tinycron [expression] [command]
 ```
 
-Tinycron can be invoked via commandline:
-```bash
-$ tinycron '*/5 * * * * * *' /bin/echo hello
-```
-
-Or conveniently used in your scripts interpreter line:
+Tinycron can be conveniently used in your scripts interpreter line:
 ```bash
 #!/usr/local/bin/tinycron */5 * * * * * * /bin/sh
 echo "Current time: $(date)"
 ```
+
+Or invoked directly via commandline:
+```bash
+$ tinycron '*/5 * * * * * *' /bin/echo hello
+```
+
 
 ## Expressions
 
