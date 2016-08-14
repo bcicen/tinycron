@@ -2,6 +2,9 @@ NAME=tinycron
 VERSION=$(shell cat VERSION)
 BUILD=$(shell git rev-parse --short HEAD)
 
+clean:
+	rm -rf build/
+
 build:
 	mkdir -p build
 	go get -v -d
