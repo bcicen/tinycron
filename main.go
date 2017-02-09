@@ -22,7 +22,6 @@ type TinyCronJob struct {
 
 type TinyCronOpts struct {
 	verbose bool
-	jobLog  string
 }
 
 func NewTinyCronJob(args []string) (*TinyCronJob, error) {
@@ -102,9 +101,6 @@ func exitOnErr(err error, msg string) {
 func optsFromEnv() (opts TinyCronOpts) {
 	if os.Getenv("TINYCRON_VERBOSE") != "" {
 		opts.verbose = true
-	}
-	if os.Getenv("TINYCRON_JOBLOG") != "" {
-		opts.jobLog = os.Getenv("TINYCRON_JOBLOG")
 	}
 	return opts
 }
